@@ -49,6 +49,31 @@ Other supported styles:
 * dim
 * underline
 
+The API of a bitwane Logger instance
+---------
+
+* logger.log()
+* logger.error()
+* logger.info()
+* logger.warn()
+
+All of the above have the same usage `logger.method(string, object)`. The object is optional.
+
+There are also two experimental methods.
+
+* logger.ok()
+* logger.notok()
+
+The constructor
+---------
+
+```javascript
+const logger = new Logger({
+    //Add a symbol prefix while in a terminal
+    prefix: true //default false
+});
+```
+
 About
 ---
 
