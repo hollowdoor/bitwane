@@ -22,7 +22,7 @@ logger.log('The $(green:magenta underscore)moon$() is green, magenta, and underl
 ```
 You should see something like this:
 
-![Alt text](/images/preview1.png "Terminal output image!")
+![Terminal output image!](/images/preview1.png "Terminal output image!")
 
 The syntax for string formatting is `%(property)`.
 
