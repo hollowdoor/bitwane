@@ -11,7 +11,7 @@
     "print",
     "colors"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "ebam": {
     "entry": "src/index.js",
