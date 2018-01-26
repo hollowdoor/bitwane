@@ -35,7 +35,7 @@ logger.log(`The moon is a $(green)green %(value)$()`, {value: 'moon'});
 logger.ok('The moon is ok');
 logger.notok('The moon is not ok');
 
-if(process.argv.indexOf('--clear') !== -1){
+if(typeof process !== 'undefined' && process.argv.indexOf('--clear') !== -1){
     setTimeout(()=>{
 
         logger.clear();
