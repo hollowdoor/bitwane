@@ -1,7 +1,7 @@
 bitwane
 ===
 
-Styles, and formatting for node, and most browsers.
+Logging with styles, and formatting for node, and most browsers.
 
 Install
 ---
