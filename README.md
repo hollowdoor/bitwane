@@ -22,11 +22,13 @@ logger.log('The $(green:magenta underscore)moon$() is green, magenta, and underl
 ```
 You should see something like this:
 
-![Alt text](/images/preview1.png "Preview 1")
+![Alt text](/images/preview1.png "Terminal output image!")
 
 The syntax for string formatting is `%(property)`.
 
 The syntax for styles is `$(foreground:background other text styles separated by spaces)`.
+
+This syntax `$()` clears styles.
 
 `foreground` is the foreground color, and `background` is a background color.
 
