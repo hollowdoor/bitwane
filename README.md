@@ -18,7 +18,7 @@ const logger = new Logger();
 logger.log('The %(value) is big.', {value: 'moon'});
 logger.log('The $(red)moon$() is red');
 logger.log('The $(green:red)moon$() is green, and red.');
-logger.log('The $(green:magenta underscore)moon$() is green, magenta, and underlined.')
+logger.log('The $(green:magenta underline)moon$() is green, magenta, and underlined.')
 ```
 You should see something like this:
 
