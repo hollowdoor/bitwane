@@ -219,31 +219,30 @@ var resetCSS = IN_BROWSER
 ? "color:initial;background-color:initial;text-decoration-line:none;font-weight:normal;"
 : '';
 
-var pattern = /(%|\$)\(([\s\S]*?)\)/g;
+var pattern = /([%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
 
 var processInput = IN_BROWSER
 ? function (input, format){
     if ( format === void 0 ) { format = {}; }
 
     var styles = [];
-    return [(input + '').replace(pattern, function (m, type, str){
-        var s = '';
-        if(type === '%'){
-            return format[str];
+
+    return [(input + '')
+    .replace(pattern, function (m, type, res, str){
+        if(type === '%('){
+            return format[res] + str;
         }
 
-        if(type !== '$') { return m; }
-
-        if(!str.length){
+        if(!res.length){
             styles.push(resetCSS);
-            return '%c';
+            return '%c' + str;
         }
 
-        var other = str.split(' ');
+        var other = res.split(' ');
         var ref = other[0].split(':');
         var fg = ref[0];
         var bg = ref[1];
-        var colorized = false;
+        var colorized = false, s = '';
 
         if(fg && fg in allowedColors){
             s += "color:" + fg + ";";
@@ -267,26 +266,25 @@ var processInput = IN_BROWSER
 
         styles.push(s);
 
-        return '%c';
+        return '%c' + str;
     })].concat(styles);
 }
 : function (input, format){
     if ( format === void 0 ) { format = {}; }
 
-    return [(input + '').replace(pattern, function (m, type, str){
+    return [(input + '')
+    .replace(pattern, function (m, type, res, str){
         var styles = '';
 
-        if(type === '%'){
-            return format[str];
+        if(type === '%('){
+            return format[res] + str;
         }
 
-        if(type !== '$') { return m; }
-
-        if(!str.length){
-            return reset;
+        if(!res.length){
+            return reset + str;
         }
 
-        var other = str.split(' ');
+        var other = res.split(' ');
         var ref = other[0].split(':');
         var fg = ref[0];
         var bg = ref[1];
@@ -312,7 +310,7 @@ var processInput = IN_BROWSER
             }
         });
 
-        return styles;
+        return styles + str;
     })];
 };
 

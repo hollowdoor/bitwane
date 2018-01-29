@@ -2,27 +2,27 @@ import { IN_BROWSER } from './constants.js';
 import { fgcodes, bgcodes, styleCodes, reset, cssStrings, resetCSS } from './style_codes.js';
 import { allowedColors, allowedStyles } from './allowed_styles.js';
 
-const pattern = /(%|\$)\(([\s\S]*?)\)/g;
+
+const pattern = /([%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
 
 const processInput = IN_BROWSER
 ? (input, format = {})=>{
     let styles = [];
-    return [(input + '').replace(pattern, (m, type, str)=>{
-        let s = '';
-        if(type === '%'){
-            return format[str];
+
+    return [(input + '')
+    .replace(pattern, (m, type, res, str)=>{
+        if(type === '%('){
+            return format[res] + str;
         }
 
-        if(type !== '$') return m;
-
-        if(!str.length){
+        if(!res.length){
             styles.push(resetCSS);
-            return '%c';
+            return '%c' + str;
         }
 
-        let other = str.split(' ');
+        let other = res.split(' ');
         let [fg, bg] = other[0].split(':');
-        let colorized = false;
+        let colorized = false, s = '';
 
         if(fg && fg in allowedColors){
             s += `color:${fg};`;
@@ -46,24 +46,23 @@ const processInput = IN_BROWSER
 
         styles.push(s);
 
-        return '%c';
+        return '%c' + str;
     })].concat(styles);
 }
 : (input, format = {})=>{
-    return [(input + '').replace(pattern, (m, type, str)=>{
+    return [(input + '')
+    .replace(pattern, (m, type, res, str)=>{
         let styles = '';
 
-        if(type === '%'){
-            return format[str];
+        if(type === '%('){
+            return format[res] + str;
         }
 
-        if(type !== '$') return m;
-
-        if(!str.length){
-            return reset;
+        if(!res.length){
+            return reset + str;
         }
 
-        let other = str.split(' ');
+        let other = res.split(' ');
         let [fg, bg] = other[0].split(':');
         let colorized = false;
 
@@ -87,7 +86,7 @@ const processInput = IN_BROWSER
             }
         });
 
-        return styles;
+        return styles + str;
     })];
 };
 
