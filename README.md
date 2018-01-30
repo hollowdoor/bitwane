@@ -70,7 +70,11 @@ The constructor
 ```javascript
 const logger = new Logger({
     //Add a symbol prefix while in a terminal
-    prefix: true //default false
+    prefix: true, //default false,
+    each(value){ //default null
+        //value is the formatted log input
+        //without styles
+    }
 });
 ```
 

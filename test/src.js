@@ -1,5 +1,9 @@
 import { Logger, allowedColors } from '../';
-const logger = new Logger();
+const logger = new Logger({
+    each(value){
+        console.log('each ', value);
+    }
+});
 
 const tests = ['log', 'error', 'warn'];
 tests.forEach(key=>{

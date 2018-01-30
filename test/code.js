@@ -314,6 +314,19 @@ var processInput = IN_BROWSER
     })];
 };
 
+function noStyles(input, format){
+    if ( format === void 0 ) { format = {}; }
+
+    return input.replace(pattern, function (m, type, res, str){
+
+        if(type === '%('){
+            return format[res] + str;
+        }
+
+        return str;
+    });
+}
+
 //https://coderwall.com/p/yphywg/printing-colorful-text-in-terminal-when-run-node-js-script
 
 //const example = `$(red:blue underscore)string$()`;
@@ -334,15 +347,23 @@ var prefixer = function (doPrefix){
 var Logger = function Logger(ref){
     if ( ref === void 0 ) { ref = {}; }
     var prefix = ref.prefix; if ( prefix === void 0 ) { prefix = false; }
+    var each = ref.each; if ( each === void 0 ) { each = null; }
 
     this.prefix = prefix;
     this.clear = clear;
     this._prefix = prefixer(prefix);
+    this._each = each;
+    if(each && typeof each !== 'function'){
+        throw new TypeError((each + " is not a function"));
+    }
 };
 Logger.prototype.process = function process (input, format, type){
         if ( format === void 0 ) { format = {}; }
         if ( type === void 0 ) { type = null; }
 
+    if(this._each){
+        this._each(noStyles(input, format));
+    }
     input = this._prefix(input, type);
     var inputs = processInput(input, format);
     //inputs[0] = this._prefix(inputs[0], type);
@@ -378,7 +399,11 @@ Logger.prototype.notok = IN_BROWSER
     return console.error.apply(console, inputs);
 };
 
-var logger = new Logger();
+var logger = new Logger({
+    each: function each(value){
+        console.log('each ', value);
+    }
+});
 
 var tests = ['log', 'error', 'warn'];
 tests.forEach(function (key){

@@ -1,6 +1,6 @@
 import { IN_BROWSER, DEBUG } from './lib/constants.js';
 import { logSymbols } from './lib/log_symbols.js';
-import { processInput } from './lib/process_input.js';
+import { processInput, noStyles } from './lib/process_input.js';
 export * from './lib/allowed_styles.js';
 export * from './lib/style_codes.js';
 
@@ -23,13 +23,21 @@ const prefixer = (doPrefix)=>{
 
 class Logger {
     constructor({
-        prefix = false
+        prefix = false,
+        each = null
     } = {}){
         this.prefix = prefix;
         this.clear = clear;
         this._prefix = prefixer(prefix);
+        this._each = each;
+        if(each && typeof each !== 'function'){
+            throw new TypeError(`${each} is not a function`);
+        }
     }
     process(input, format = {}, type = null){
+        if(this._each){
+            this._each(noStyles(input, format));
+        }
         input = this._prefix(input, type);
         let inputs = processInput(input, format);
         //inputs[0] = this._prefix(inputs[0], type);

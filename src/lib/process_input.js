@@ -90,4 +90,15 @@ const processInput = IN_BROWSER
     })];
 };
 
-export { processInput };
+function noStyles(input, format = {}){
+    return input.replace(pattern, (m, type, res, str)=>{
+
+        if(type === '%('){
+            return format[res] + str;
+        }
+
+        return str;
+    });
+}
+
+export { processInput, noStyles };
