@@ -4,38 +4,17 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var uniCompat = require('uni-compat');
 var rawObject = _interopDefault(require('raw-object'));
 
-var IN_BROWSER = new Function("try {return this===window;}catch(e){ return false;}")();
-
-var DEBUG = (function (){
-    if(IN_BROWSER){
-        if(/(^[?]|&)DEBUG=(1|true)/.test(window.location.search + '')){
-            return true;
-        }
-
-        var html =  document
-        .getElementsByTagName('html');
-        if(!html) { return false; }
-        html = html[0];
-        if(html.hasAttribute('data-debug')){
-            return html.getAttribute('data-debug');
-        }
-        return false;
-    }
-    return !!process.env['DEBUG'] &&
-    (process.env['DEBUG'] === 1 || process.env['DEBUG'] === 'true');
-})();
-
-var SUPPORTS_SYMBOLS = IN_BROWSER || (process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color');
-
 var TERM_SUPPORTS_COLOR = (function (){
-    if(IN_BROWSER) { return false; }
-    var supports = require('supports-color');
-    return supports.stdout.hasBasic;
+    var supports = uniCompat.supportsColor();
+    return !supports.browser && supports.stdout.hasBasic;
 })();
 
-var logSymbols = SUPPORTS_SYMBOLS ?
+var DEBUG = uniCompat.debugging();
+
+var logSymbols = uniCompat.SUPPORTS_UTF8 ?
 //Based on https://github.com/sindresorhus/log-symbols
 rawObject({
         info: "$(blue)ℹ$()",
@@ -71,12 +50,12 @@ var allowedStyles = rawObject({
     //hidden: 8
 });
 
-var reset = IN_BROWSER ? '' : "\u001b[0m";
+var reset = uniCompat.IN_BROWSER ? '' : "\u001b[0m";
 var fgcodes = rawObject({reset: reset});
 var bgcodes = rawObject({reset: reset});
 var styleCodes = rawObject({reset: reset});
 
-if(!IN_BROWSER && TERM_SUPPORTS_COLOR){
+if(!uniCompat.IN_BROWSER && TERM_SUPPORTS_COLOR){
     //Set terminal colors
     Object.keys(allowedColors).forEach(function (color){
         fgcodes[color] = "\u001b[3" + (allowedColors[color]) + "m";
@@ -97,20 +76,20 @@ if(!IN_BROWSER && TERM_SUPPORTS_COLOR){
     });
 }
 
-var cssStrings = !IN_BROWSER ? null
+var cssStrings = !uniCompat.IN_BROWSER ? null
 : rawObject({
     bright: 'font-weight: bold;',
     dim: 'font-weight: ligher;',
     underline: 'text-decoration-line:underline;'
 });
 
-var resetCSS = IN_BROWSER
+var resetCSS = uniCompat.IN_BROWSER
 ? "color:initial;background-color:initial;text-decoration-line:none;font-weight:normal;"
 : '';
 
 var pattern = /([%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
 
-var processInput = IN_BROWSER
+var processInput = uniCompat.IN_BROWSER
 ? function (input, format){
     if ( format === void 0 ) format = {};
 
@@ -220,14 +199,14 @@ function noStyles(input, format){
 
 //const example = `$(red:blue underscore)string$()`;
 
-var clear = IN_BROWSER
+var clear = uniCompat.IN_BROWSER
 //https://developer.mozilla.org/en-US/docs/Web/API/Console/clear
 ? function (){ return console.clear(); }
 //https://gist.github.com/KenanSulayman/4990953
 : function (){ return process.stdout.write('\x1Bc'); };
 
 var prefixer = function (doPrefix){
-    return doPrefix && !IN_BROWSER
+    return doPrefix && !uniCompat.IN_BROWSER
     ? function (val, type){
         return (logSymbols[type] || '') + val;
     } : function (val){ return val; };
@@ -279,7 +258,7 @@ Logger.prototype.ok = function ok (input, format){
     return console.log.apply(console, inputs);
 };
 
-Logger.prototype.notok = IN_BROWSER
+Logger.prototype.notok = uniCompat.IN_BROWSER
 ? function(input, format){
     return this.error(input, format);
 }

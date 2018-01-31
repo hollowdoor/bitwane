@@ -1,35 +1,14 @@
+import { IN_BROWSER, SUPPORTS_UTF8, debugging, supportsColor } from 'uni-compat';
 import rawObject from 'raw-object';
 
-var IN_BROWSER = new Function("try {return this===window;}catch(e){ return false;}")();
-
-var DEBUG = (function (){
-    if(IN_BROWSER){
-        if(/(^[?]|&)DEBUG=(1|true)/.test(window.location.search + '')){
-            return true;
-        }
-
-        var html =  document
-        .getElementsByTagName('html');
-        if(!html) { return false; }
-        html = html[0];
-        if(html.hasAttribute('data-debug')){
-            return html.getAttribute('data-debug');
-        }
-        return false;
-    }
-    return !!process.env['DEBUG'] &&
-    (process.env['DEBUG'] === 1 || process.env['DEBUG'] === 'true');
-})();
-
-var SUPPORTS_SYMBOLS = IN_BROWSER || (process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color');
-
 var TERM_SUPPORTS_COLOR = (function (){
-    if(IN_BROWSER) { return false; }
-    var supports = require('supports-color');
-    return supports.stdout.hasBasic;
+    var supports = supportsColor();
+    return !supports.browser && supports.stdout.hasBasic;
 })();
 
-var logSymbols = SUPPORTS_SYMBOLS ?
+var DEBUG = debugging();
+
+var logSymbols = SUPPORTS_UTF8 ?
 //Based on https://github.com/sindresorhus/log-symbols
 rawObject({
         info: "$(blue)ℹ$()",

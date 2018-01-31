@@ -1,34 +1,31 @@
 (function (exports) {
 'use strict';
 
+//Except for IN_BROWSER constants should be side effect free for transpiler tree shaking
 var IN_BROWSER = new Function("try {return this===window;}catch(e){ return false;}")();
+var SUPPORTS_UTF8 = IN_BROWSER || (process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color');
 
-var DEBUG = (function (){
+function supportsColor(){
     if(IN_BROWSER){
-        if(/(^[?]|&)DEBUG=(1|true)/.test(window.location.search + '')){
-            return true;
-        }
-
-        var html =  document
-        .getElementsByTagName('html');
-        if(!html) { return false; }
-        html = html[0];
-        if(html.hasAttribute('data-debug')){
-            return html.getAttribute('data-debug');
-        }
-        return false;
+        return {
+            browser: true
+        };
     }
-    return !!process.env['DEBUG'] &&
-    (process.env['DEBUG'] === 1 || process.env['DEBUG'] === 'true');
-})();
-
-var SUPPORTS_SYMBOLS = IN_BROWSER || (process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color');
-
-var TERM_SUPPORTS_COLOR = (function (){
-    if(IN_BROWSER) { return false; }
     var supports = require('supports-color');
-    return supports.stdout.hasBasic;
+    supports.browser = false;
+    return supports;
+}
+
+function debugging(){
+    return (IN_BROWSER && (/(^\?|&)DEBUG=(1|true)/.test(window.location.search + ''))) || !!process.env['DEBUG'] && process.env['DEBUG'] === 1 || process.env['DEBUG'] === 'true';
+}
+
+var TERM_SUPPORTS_COLOR$$1 = (function (){
+    var supports = supportsColor();
+    return !supports.browser && supports.stdout.hasBasic;
 })();
+
+var DEBUG = debugging();
 
 /*
 object-assign
@@ -146,7 +143,7 @@ function rawObject(){
     return raw;
 }
 
-var logSymbols = SUPPORTS_SYMBOLS ?
+var logSymbols = SUPPORTS_UTF8 ?
 //Based on https://github.com/sindresorhus/log-symbols
 rawObject({
         info: "$(blue)ℹ$()",
@@ -187,7 +184,7 @@ var fgcodes = rawObject({reset: reset});
 var bgcodes = rawObject({reset: reset});
 var styleCodes = rawObject({reset: reset});
 
-if(!IN_BROWSER && TERM_SUPPORTS_COLOR){
+if(!IN_BROWSER && TERM_SUPPORTS_COLOR$$1){
     //Set terminal colors
     Object.keys(allowedColors).forEach(function (color){
         fgcodes[color] = "\u001b[3" + (allowedColors[color]) + "m";
@@ -197,7 +194,7 @@ if(!IN_BROWSER && TERM_SUPPORTS_COLOR){
     Object.keys(allowedStyles).forEach(function (style){
         styleCodes[style] = "\u001b[" + (allowedStyles[style]) + "m";
     });
-}else if(!TERM_SUPPORTS_COLOR){
+}else if(!TERM_SUPPORTS_COLOR$$1){
     Object.keys(allowedColors).forEach(function (color){
         fgcodes[color] = "";
         bgcodes[color] = "";
