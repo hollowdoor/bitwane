@@ -1,4 +1,4 @@
-import { IN_BROWSER } from './constants.js';
+import { IN_BROWSER, SUPPORTS_LOG_STYLES } from './constants.js';
 import { fgcodes, bgcodes, styleCodes, reset, cssStrings, resetCSS } from './style_codes.js';
 import { allowedColors, allowedStyles } from './allowed_styles.js';
 
@@ -13,6 +13,10 @@ const processInput = IN_BROWSER
     .replace(pattern, (m, type, res, str)=>{
         if(type === '%('){
             return format[res] + str;
+        }
+
+        if(!SUPPORTS_LOG_STYLES){
+            return '';
         }
 
         if(!res.length){

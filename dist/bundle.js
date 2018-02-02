@@ -12,6 +12,8 @@ var TERM_SUPPORTS_COLOR = (function (){
     return !supports.browser && supports.stdout.hasBasic;
 })();
 
+var SUPPORTS_LOG_STYLES = uniCompat.supportsLogStyles();
+
 var DEBUG = uniCompat.debugging();
 
 var logSymbols = uniCompat.SUPPORTS_UTF8 ?
@@ -99,6 +101,10 @@ var processInput = uniCompat.IN_BROWSER
     .replace(pattern, function (m, type, res, str){
         if(type === '%('){
             return format[res] + str;
+        }
+
+        if(!SUPPORTS_LOG_STYLES){
+            return '';
         }
 
         if(!res.length){

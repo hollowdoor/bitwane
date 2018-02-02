@@ -31,7 +31,7 @@
   "dependencies": {
     "raw-object": "^1.0.0",
     "supports-color": "^5.1.0",
-    "uni-compat": "^1.0.1"
+    "uni-compat": "^1.1.0"
   },
   "directories": {
     "test": "test"

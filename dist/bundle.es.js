@@ -1,10 +1,12 @@
-import { IN_BROWSER, SUPPORTS_UTF8, debugging, supportsColor } from 'uni-compat';
+import { IN_BROWSER, SUPPORTS_UTF8, debugging, supportsColor, supportsLogStyles } from 'uni-compat';
 import rawObject from 'raw-object';
 
 var TERM_SUPPORTS_COLOR = (function (){
     var supports = supportsColor();
     return !supports.browser && supports.stdout.hasBasic;
 })();
+
+var SUPPORTS_LOG_STYLES = supportsLogStyles();
 
 var DEBUG = debugging();
 
@@ -93,6 +95,10 @@ var processInput = IN_BROWSER
     .replace(pattern, function (m, type, res, str){
         if(type === '%('){
             return format[res] + str;
+        }
+
+        if(!SUPPORTS_LOG_STYLES){
+            return '';
         }
 
         if(!res.length){
