@@ -263,6 +263,51 @@ Logger.prototype.ok = function ok (input, format){
     var inputs = this.process(((logSymbols.success) + " " + input), format);
     return console.log.apply(console, inputs);
 };
+Logger.toList = function toList (input, ref){
+        if ( ref === void 0 ) ref = {};
+        var extra = ref.extra; if ( extra === void 0 ) extra = 1;
+        var sep = ref.sep; if ( sep === void 0 ) sep = ' ';
+        var dot = ref.dot; if ( dot === void 0 ) dot = '.';
+        var colors = ref.colors; if ( colors === void 0 ) colors = {};
+
+    var keys = Object.keys(input);
+    var isArray = Array.isArray(input);
+
+    var max = isArray
+    ? (input.length + '').length + extra + 1
+    : keys.reduce(function (max, key){
+        return key.length > max ? key.length : max;
+    }, 1) + extra;
+
+    var item = isArray
+    ? function (key, i){ return i+dot; }
+    : function (key){ return key; };
+
+    return keys.map(function (key, i){
+        var pre = item(key, i);
+        for(var i$1=pre.length; i$1<max; i$1++){
+            pre = pre + sep;
+        }
+        return {pre: pre, val:input[key]};
+    });
+};
+Logger.prototype.list = function list (input, options){
+        var this$1 = this;
+        if ( options === void 0 ) options = {};
+
+    if(typeof input !== 'object'){
+        throw new TypeError((input + " is not an object, or array."))
+    }
+    var every = options.every; if ( every === void 0 ) every = (function (pre, val){
+        return pre + val;
+    });
+
+    return Logger.toList(input, options)
+    .map(function (line){
+        console.log(every.call(this$1, line.pre, line.val));
+        return line;
+    });
+};
 
 Logger.prototype.notok = uniCompat.IN_BROWSER
 ? function(input, format){

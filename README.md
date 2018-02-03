@@ -59,6 +59,44 @@ The API of a bitwane Logger instance
 
 All of the above have the same usage `logger.method(string, object)`. The object is optional.
 
+## logger.list(obj, options)
+
+`logger.list()` prints an object, or array as a formatted list.
+
+```javascript
+logger.list({
+    one: 'one',
+    two: 'two',
+    three: 'three'
+});
+
+logger.list([
+    'one',
+    'two',
+    'three'
+]);
+//With options
+logger.list([
+    'one',
+    'two',
+    'three'
+], {
+    //Repeat sep (default = 1)
+    extra = 1,
+    //sep separates the property/index from the value
+    //(default = ' ')
+    sep = ' ',
+    //A dot after the index of a list array
+    //(default = '.')
+    dot = '.',
+    //Alter each index, and value
+    //right before logging.
+    every(index, val){
+        return index + val;
+    }
+});
+```
+
 There are also two experimental methods.
 
 * logger.ok()

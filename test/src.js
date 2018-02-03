@@ -51,3 +51,23 @@ logger.log('The %(value) is big.', {value: 'moon'});
 logger.log('The $(red)moon$() is red');
 logger.log('The $(green:red)moon$() is green, and red.');
 logger.log('The $(green:magenta underline)moon$() is green, magenta, and underlined.')
+
+logger.list({
+    one: 'one',
+    two: 'two',
+    three: 'three'
+});
+
+logger.list([
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+    'eleven'
+]);

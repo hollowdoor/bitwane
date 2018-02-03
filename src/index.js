@@ -63,6 +63,47 @@ class Logger {
         let inputs = this.process(`${logSymbols.success} ${input}`, format);
         return console.log(...inputs);
     }
+    static toList(input, {
+        extra = 1,
+        sep = ' ',
+        dot = '.',
+        colors = {}
+    } = {}){
+        const keys = Object.keys(input);
+        const isArray = Array.isArray(input);
+
+        const max = isArray
+        ? (input.length + '').length + extra + 1
+        : keys.reduce((max, key)=>{
+            return key.length > max ? key.length : max;
+        }, 1) + extra;
+
+        const item = isArray
+        ? (key, i)=>i+dot
+        : key=>key;
+
+        return keys.map((key, i)=>{
+            let pre = item(key, i);
+            for(let i=pre.length; i<max; i++){
+                pre = pre + sep;
+            }
+            return {pre, val:input[key]};
+        });
+    }
+    list(input, options = {}){
+        if(typeof input !== 'object'){
+            throw new TypeError(`${input} is not an object, or array.`)
+        }
+        const { every = ((pre, val)=>{
+            return pre + val;
+        }) } = options;
+
+        return Logger.toList(input, options)
+        .map(line=>{
+            console.log(every.call(this, line.pre, line.val));
+            return line;
+        });
+    }
 }
 
 Logger.prototype.notok = IN_BROWSER
