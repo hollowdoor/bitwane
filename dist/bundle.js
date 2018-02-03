@@ -280,7 +280,7 @@ Logger.toList = function toList (input, ref){
     }, 1) + extra;
 
     var item = isArray
-    ? function (key, i){ return i+dot; }
+    ? function (key, i){ return (i+1)+dot; }
     : function (key){ return key; };
 
     return keys.map(function (key, i){
@@ -307,6 +307,40 @@ Logger.prototype.list = function list (input, options){
         console.log(every.call(this$1, line.pre, line.val));
         return line;
     });
+};
+
+Logger.prototype.table = (uniCompat.IN_BROWSER && typeof console === 'object' && typeof console['table'] === 'function')
+? function(input){
+    return console.table(input);
+}
+: function(input){
+    var isArray = Array.isArray(input);
+    var keys = Object.keys(input);
+    var head = '';
+    var body = '';
+
+    var max = isArray
+    ? (input.length + '').length + 2
+    : keys.reduce(function (max, key){
+        return key.length > max ? key.length : max;
+    }, 1) + 2;
+
+    keys.forEach(function (key, i){
+
+        var pre = key;
+        for(var i$1=pre.length; i$1<max; i$1++){
+            pre = pre + ' ';
+        }
+
+        //if(typeof input[key] === 'object'){
+
+        //}else{
+            body += pre + '| ' + input[key];
+        //}
+        body += '\n';
+    });
+
+    console.log(body);
 };
 
 Logger.prototype.notok = uniCompat.IN_BROWSER
