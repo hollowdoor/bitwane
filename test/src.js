@@ -71,9 +71,3 @@ logger.list([
     'ten',
     'eleven'
 ]);
-
-logger.table([
-    'one',
-    'two',
-    'three'
-]);

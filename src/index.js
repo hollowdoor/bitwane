@@ -104,41 +104,10 @@ class Logger {
             return line;
         });
     }
+    static toTree(input){
+    }
 }
 
-Logger.prototype.table = (IN_BROWSER && typeof console === 'object' && typeof console['table'] === 'function')
-? function(input){
-    return console.table(input);
-}
-: function(input){
-    const isArray = Array.isArray(input);
-    const keys = Object.keys(input);
-    let head = '';
-    let body = '';
-
-    const max = isArray
-    ? (input.length + '').length + 2
-    : keys.reduce((max, key)=>{
-        return key.length > max ? key.length : max;
-    }, 1) + 2;
-
-    keys.forEach((key, i)=>{
-
-        let pre = key;
-        for(let i=pre.length; i<max; i++){
-            pre = pre + ' ';
-        }
-
-        //if(typeof input[key] === 'object'){
-
-        //}else{
-            body += pre + '| ' + input[key];
-        //}
-        body += '\n';
-    });
-
-    console.log(body);
-};
 
 Logger.prototype.notok = IN_BROWSER
 ? function(input, format){

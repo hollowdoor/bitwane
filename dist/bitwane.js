@@ -464,40 +464,9 @@ Logger.prototype.list = function list (input, options){
         return line;
     });
 };
-
-Logger.prototype.table = (IN_BROWSER && typeof console === 'object' && typeof console['table'] === 'function')
-? function(input){
-    return console.table(input);
-}
-: function(input){
-    var isArray = Array.isArray(input);
-    var keys = Object.keys(input);
-    var head = '';
-    var body = '';
-
-    var max = isArray
-    ? (input.length + '').length + 2
-    : keys.reduce(function (max, key){
-        return key.length > max ? key.length : max;
-    }, 1) + 2;
-
-    keys.forEach(function (key, i){
-
-        var pre = key;
-        for(var i$1=pre.length; i$1<max; i$1++){
-            pre = pre + ' ';
-        }
-
-        //if(typeof input[key] === 'object'){
-
-        //}else{
-            body += pre + '| ' + input[key];
-        //}
-        body += '\n';
-    });
-
-    console.log(body);
+Logger.toTree = function toTree (input){
 };
+
 
 Logger.prototype.notok = IN_BROWSER
 ? function(input, format){
