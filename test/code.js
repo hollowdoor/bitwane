@@ -163,6 +163,40 @@ function rawObject(){
     return raw;
 }
 
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var indentString = createCommonjsModule(function (module) {
+'use strict';
+module.exports = function (str, count, opts) {
+	// Support older versions: use the third parameter as options.indent
+	// TODO: Remove the workaround in the next major version
+	var options = typeof opts === 'object' ? Object.assign({indent: ' '}, opts) : {indent: opts || ' '};
+	count = count === undefined ? 1 : count;
+
+	if (typeof str !== 'string') {
+		throw new TypeError(("Expected `input` to be a `string`, got `" + (typeof str) + "`"));
+	}
+
+	if (typeof count !== 'number') {
+		throw new TypeError(("Expected `count` to be a `number`, got `" + (typeof count) + "`"));
+	}
+
+	if (typeof options.indent !== 'string') {
+		throw new TypeError(("Expected `options.indent` to be a `string`, got `" + (typeof options.indent) + "`"));
+	}
+
+	if (count === 0) {
+		return str;
+	}
+
+	var regex = options.includeEmptyLines ? /^/mg : /^(?!\s*$)/mg;
+	return str.replace(regex, options.indent.repeat(count));
+}
+;
+});
+
 var TERM_SUPPORTS_COLOR$$1 = (function (){
     var supports = supportsColor();
     return !supports.browser && supports.stdout.hasBasic;
@@ -357,6 +391,56 @@ function noStyles(input, format){
     });
 }
 
+function toTree(input, depth){
+    if ( depth === void 0 ) { depth = 0; }
+
+    var type = typeof input;
+
+    if(type === 'string'){
+        return indentString(("\"" + input + "\""), depth);
+    }else if(['number', 'boolean', 'undefined'].indexOf(type) !== -1 || input === null){
+        return indentString(input + '', depth);
+    }
+
+    var isArray = Array.isArray(input);
+    var keys = Object.keys(input);
+    var end = keys.length - 1;
+    var output = '';
+
+    if(isArray){
+        output += '[\n';//indent('[\n', depth);
+        for(var i=0; i<keys.length; i++){
+            var val = input[keys[i]];
+            var valType = typeof val;
+            output += (valType === 'string'
+                ? indentString(("\"" + val + "\""), depth + 1)
+                : valType === 'object'
+                ? toTree(val, depth + 1)
+                : indentString(val + '', depth + 1)
+            ) + (i !== end ? ',' : '') + '\n';
+        }
+        output += ']\n';//indent(']\n', depth);
+        return output;
+    }
+
+    for(var i$1=0; i$1<keys.length; i$1++){
+        var key = keys[i$1];
+        var val$1 = input[key];
+        var valType$1 = typeof val$1;
+        output += (valType$1 === 'string'
+        ? (key + ": $(bright)\"" + val$1 + "$()\"")
+        : valType$1 === 'object'
+        ? indentString(
+            (key + ": " + (toTree(val$1, depth + 1))),
+            depth
+        )
+        : val$1)
+        + (i$1 !== end ? ',' : '') + '\n';
+    }
+
+    return output;
+}
+
 //https://coderwall.com/p/yphywg/printing-colorful-text-in-terminal-when-run-node-js-script
 
 //const example = `$(red:blue underscore)string$()`;
@@ -464,7 +548,8 @@ Logger.prototype.list = function list (input, options){
         return line;
     });
 };
-Logger.toTree = function toTree (input){
+Logger.prototype.tree = function tree (input){
+    return this.log(toTree(input));
 };
 
 
@@ -549,6 +634,12 @@ logger.list([
     'ten',
     'eleven'
 ]);
+
+logger.tree({
+    one: 'one',
+    two: 'two',
+    three: [0, 1, 3]
+});
 
 }());
 //# sourceMappingURL=code.js.map

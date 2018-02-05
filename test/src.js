@@ -71,3 +71,9 @@ logger.list([
     'ten',
     'eleven'
 ]);
+
+logger.tree({
+    one: 'one',
+    two: 'two',
+    three: [0, 1, 3]
+});

@@ -29,6 +29,7 @@
   "jsnext:main": "dist/bundle.es.js",
   "module": "dist/bundle.es.js",
   "dependencies": {
+    "indent-string": "^3.2.0",
     "raw-object": "^1.0.0",
     "supports-color": "^5.1.0",
     "uni-compat": "^1.1.0"

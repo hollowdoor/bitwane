@@ -1,5 +1,6 @@
 import { IN_BROWSER, SUPPORTS_UTF8, debugging, supportsColor, supportsLogStyles } from 'uni-compat';
 import rawObject from 'raw-object';
+import indent from 'indent-string';
 
 var TERM_SUPPORTS_COLOR = (function (){
     var supports = supportsColor();
@@ -195,6 +196,56 @@ function noStyles(input, format){
     });
 }
 
+function toTree(input, depth){
+    if ( depth === void 0 ) depth = 0;
+
+    var type = typeof input;
+
+    if(type === 'string'){
+        return indent(("\"" + input + "\""), depth);
+    }else if(['number', 'boolean', 'undefined'].indexOf(type) !== -1 || input === null){
+        return indent(input + '', depth);
+    }
+
+    var isArray = Array.isArray(input);
+    var keys = Object.keys(input);
+    var end = keys.length - 1;
+    var output = '';
+
+    if(isArray){
+        output += '[\n';//indent('[\n', depth);
+        for(var i=0; i<keys.length; i++){
+            var val = input[keys[i]];
+            var valType = typeof val;
+            output += (valType === 'string'
+                ? indent(("\"" + val + "\""), depth + 1)
+                : valType === 'object'
+                ? toTree(val, depth + 1)
+                : indent(val + '', depth + 1)
+            ) + (i !== end ? ',' : '') + '\n';
+        }
+        output += ']\n';//indent(']\n', depth);
+        return output;
+    }
+
+    for(var i$1=0; i$1<keys.length; i$1++){
+        var key = keys[i$1];
+        var val$1 = input[key];
+        var valType$1 = typeof val$1;
+        output += (valType$1 === 'string'
+        ? (key + ": $(bright)\"" + val$1 + "$()\"")
+        : valType$1 === 'object'
+        ? indent(
+            (key + ": " + (toTree(val$1, depth + 1))),
+            depth
+        )
+        : val$1)
+        + (i$1 !== end ? ',' : '') + '\n';
+    }
+
+    return output;
+}
+
 //https://coderwall.com/p/yphywg/printing-colorful-text-in-terminal-when-run-node-js-script
 
 //const example = `$(red:blue underscore)string$()`;
@@ -302,7 +353,8 @@ Logger.prototype.list = function list (input, options){
         return line;
     });
 };
-Logger.toTree = function toTree (input){
+Logger.prototype.tree = function tree (input){
+    return this.log(toTree(input));
 };
 
 
