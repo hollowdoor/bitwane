@@ -84,7 +84,7 @@ var resetCSS = IN_BROWSER
 ? "color:initial;background-color:initial;text-decoration-line:none;font-weight:normal;"
 : '';
 
-var pattern = /([%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
+var pattern = /(\\?[%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
 
 var processInput = IN_BROWSER
 ? function (input, format){
@@ -94,12 +94,13 @@ var processInput = IN_BROWSER
 
     return [(input + '')
     .replace(pattern, function (m, type, res, str){
+        if(type[0] === '\\') { return m.slice(1); }
         if(type === '%('){
             return format[res] + str;
         }
 
         if(!SUPPORTS_LOG_STYLES){
-            return '';
+            return '' + str;
         }
 
         if(!res.length){
@@ -144,7 +145,8 @@ var processInput = IN_BROWSER
     return [(input + '')
     .replace(pattern, function (m, type, res, str){
         var styles = '';
-
+        //console.log(type[0])
+        if(type[0] === '\\') { return m.slice(1); }
         if(type === '%('){
             return format[res] + str;
         }
@@ -196,15 +198,72 @@ function noStyles(input, format){
     });
 }
 
-function toTree(input, depth){
+function esc(input){
+    return (input + '')
+    .replace(pattern, function (m, type, res, str){
+        if(type[0] === '\\'){
+            return m;
+        }
+        return '\\' + m;
+    });
+}
+
+function log(input, dent, end){
+    if ( dent === void 0 ) dent = 0;
+    if ( end === void 0 ) end = false;
+
+    var inputs = processInput(input + '');
+    inputs[0] = indent(inputs[0], dent);
+    if(end){
+        inputs[0] += ',';
+    }
+    console.log.apply(console, inputs);
+}
+
+function arr(input){
+    return input === ']'
+    || input === '['
+    || input === ' ['
+    ? 'green:' : '';
+}
+function edge(input){
+    return ("$(" + (arr(input)) + "bright)" + input + "$()");
+}
+
+function last(input){
+    return edge(Array.isArray(input) ? ' [': ' {');
+}
+
+function num(input){
+    return ("$(magenta:bright)" + input + "$()");
+}
+
+function str(input){
+    return ("$(blue:bright)\"" + (esc(input)) + "\"$()");
+}
+
+function other(input){
+    var type = typeof input;
+
+    return type === 'number'
+    ? num(input)
+    : type === 'boolean'
+    ? ("$(red:bright)" + input + "$()")
+    : input;
+}
+
+function printObject(input, depth, ending){
     if ( depth === void 0 ) depth = 0;
+    if ( ending === void 0 ) ending = false;
 
     var type = typeof input;
 
-    if(type === 'string'){
-        return indent(("\"" + input + "\""), depth);
-    }else if(['number', 'boolean', 'undefined'].indexOf(type) !== -1 || input === null){
-        return indent(input + '', depth);
+    if(type !== 'object'){
+        if(type === 'string'){
+            return log(("\"" + input + "\""), depth);
+        }else if(['number', 'boolean', 'undefined'].indexOf(type) !== -1 || input === null){
+            return log(input, depth);
+        }
     }
 
     var isArray = Array.isArray(input);
@@ -213,37 +272,41 @@ function toTree(input, depth){
     var output = '';
 
     if(isArray){
-        output += '[\n';//indent('[\n', depth);
+        if(!depth) { log(edge('['), depth); }
         for(var i=0; i<keys.length; i++){
+            var out = '';
             var val = input[keys[i]];
             var valType = typeof val;
-            output += (valType === 'string'
-                ? indent(("\"" + val + "\""), depth + 1)
-                : valType === 'object'
-                ? toTree(val, depth + 1)
-                : indent(val + '', depth + 1)
-            ) + (i !== end ? ',' : '') + '\n';
+            if(valType === 'string'){
+                log(str(val), depth + 2, i !== end);
+            }else if(valType === 'object'){
+                log(last(val), depth + 1);
+                printObject(val, depth + 2, i !== end);
+            }else{
+                log(other(val), depth + 2, i !== end);
+            }
         }
-        output += ']\n';//indent(']\n', depth);
-        return output;
+        log(edge(']'), depth, ending);
+        return;
     }
+
+    if(!depth) { log(edge('{'), depth); }
 
     for(var i$1=0; i$1<keys.length; i$1++){
         var key = keys[i$1];
         var val$1 = input[key];
         var valType$1 = typeof val$1;
-        output += (valType$1 === 'string'
-        ? (key + ": $(bright)\"" + val$1 + "$()\"")
-        : valType$1 === 'object'
-        ? indent(
-            (key + ": " + (toTree(val$1, depth + 1))),
-            depth
-        )
-        : val$1)
-        + (i$1 !== end ? ',' : '') + '\n';
+        if(valType$1 === 'string'){
+            log((key + ": " + (str(val$1))), depth + 2, i$1 !== end);
+        }else if(valType$1 === 'object'){
+            log((key + ":" + (last(val$1))), depth + 2);
+            printObject(val$1, depth + 2, i$1 !== end);
+        }else{
+            log((key + ": " + (other(val$1))), depth + 2, i$1 !== end);
+        }
     }
 
-    return output;
+    log(edge('}'), depth, ending);
 }
 
 //https://coderwall.com/p/yphywg/printing-colorful-text-in-terminal-when-run-node-js-script
@@ -354,7 +417,7 @@ Logger.prototype.list = function list (input, options){
     });
 };
 Logger.prototype.tree = function tree (input){
-    return this.log(toTree(input));
+    return printObject(input);
 };
 
 

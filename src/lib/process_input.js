@@ -3,7 +3,7 @@ import { fgcodes, bgcodes, styleCodes, reset, cssStrings, resetCSS } from './sty
 import { allowedColors, allowedStyles } from './allowed_styles.js';
 
 
-const pattern = /([%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
+const pattern = /(\\?[%\$]\()([\s\S]*?)\)([\s\S]*?)/g;
 
 const processInput = IN_BROWSER
 ? (input, format = {})=>{
@@ -11,12 +11,13 @@ const processInput = IN_BROWSER
 
     return [(input + '')
     .replace(pattern, (m, type, res, str)=>{
+        if(type[0] === '\\') return m.slice(1);
         if(type === '%('){
             return format[res] + str;
         }
 
         if(!SUPPORTS_LOG_STYLES){
-            return '';
+            return '' + str;
         }
 
         if(!res.length){
@@ -57,7 +58,8 @@ const processInput = IN_BROWSER
     return [(input + '')
     .replace(pattern, (m, type, res, str)=>{
         let styles = '';
-
+        //console.log(type[0])
+        if(type[0] === '\\') return m.slice(1);
         if(type === '%('){
             return format[res] + str;
         }
@@ -102,6 +104,16 @@ function noStyles(input, format = {}){
         }
 
         return str;
+    });
+}
+
+export function esc(input){
+    return (input + '')
+    .replace(pattern, (m, type, res, str)=>{
+        if(type[0] === '\\'){
+            return m;
+        }
+        return '\\' + m;
     });
 }
 

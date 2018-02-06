@@ -74,6 +74,11 @@ logger.list([
 
 logger.tree({
     one: 'one',
-    two: 'two',
-    three: [0, 1, 3]
+    two: 't$()wo',
+    three: [0, 1, false],
+    four: {
+        one: 'one',
+        two: 'two',
+        three: [0, 1, 3, {one: 'one', two: 'two'}]
+    }
 });

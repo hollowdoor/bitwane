@@ -1,7 +1,7 @@
 import { IN_BROWSER, DEBUG } from './lib/constants.js';
 import { logSymbols } from './lib/log_symbols.js';
 import { processInput, noStyles } from './lib/process_input.js';
-import toTree from './lib/to_tree.js';
+import printObject from './lib/print_object.js';
 export * from './lib/allowed_styles.js';
 export * from './lib/style_codes.js';
 
@@ -106,7 +106,7 @@ class Logger {
         });
     }
     tree(input){
-        return this.log(toTree(input));
+        return printObject(input);
     }
 }
 
