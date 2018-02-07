@@ -51,7 +51,7 @@ function isDate(input){
     return Object.prototype.toString.call(date) === '[object Date]';
 }
 
-export default function printObject(input, depth = 0, ending = false){
+export default function printObject(input, depth = 0, ending = false, start = false){
     const type = typeof input;
 
     if(type !== 'object'){
@@ -68,7 +68,7 @@ export default function printObject(input, depth = 0, ending = false){
     let output = '';
 
     if(isArray){
-        if(!depth) log(edge('['), depth);
+        if(start) log(edge('['), depth);
         for(let i=0; i<keys.length; i++){
             let out = '';
             let val = input[keys[i]];
@@ -86,7 +86,7 @@ export default function printObject(input, depth = 0, ending = false){
         return;
     }
 
-    if(!depth) log(edge('{'), depth);
+    if(start) log(edge('{'), depth);
 
     for(let i=0; i<keys.length; i++){
         let key = keys[i];

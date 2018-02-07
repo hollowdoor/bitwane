@@ -105,8 +105,8 @@ class Logger {
             return line;
         });
     }
-    tree(input){
-        return printObject(input);
+    tree(input, indent = 0){
+        return printObject(input, indent, false, true);
     }
 }
 

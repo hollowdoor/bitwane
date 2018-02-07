@@ -447,9 +447,10 @@ function other(input){
     : input;
 }
 
-function printObject(input, depth, ending){
+function printObject(input, depth, ending, start){
     if ( depth === void 0 ) { depth = 0; }
     if ( ending === void 0 ) { ending = false; }
+    if ( start === void 0 ) { start = false; }
 
     var type = typeof input;
 
@@ -467,7 +468,7 @@ function printObject(input, depth, ending){
     var output = '';
 
     if(isArray){
-        if(!depth) { log(edge('['), depth); }
+        if(start) { log(edge('['), depth); }
         for(var i=0; i<keys.length; i++){
             var out = '';
             var val = input[keys[i]];
@@ -485,7 +486,7 @@ function printObject(input, depth, ending){
         return;
     }
 
-    if(!depth) { log(edge('{'), depth); }
+    if(start) { log(edge('{'), depth); }
 
     for(var i$1=0; i$1<keys.length; i$1++){
         var key = keys[i$1];
@@ -611,8 +612,10 @@ Logger.prototype.list = function list (input, options){
         return line;
     });
 };
-Logger.prototype.tree = function tree (input){
-    return printObject(input);
+Logger.prototype.tree = function tree (input, indent$$1){
+        if ( indent$$1 === void 0 ) { indent$$1 = 0; }
+
+    return printObject(input, indent$$1, false, true);
 };
 
 
@@ -713,6 +716,16 @@ logger.tree([0, 1, 3, {one: 'one', two: 'two'}]);
 logger.tree("a string");
 logger.tree(2);
 logger.tree(true);
+logger.tree({
+    one: 'one',
+    two: 't$()wo',
+    three: [0, 1, false],
+    four: {
+        one: 'one',
+        two: 'two',
+        three: [0, 1, 3, {one: 'one', two: 'two'}]
+    }
+}, 2);
 
 }());
 //# sourceMappingURL=code.js.map

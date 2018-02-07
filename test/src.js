@@ -87,3 +87,13 @@ logger.tree([0, 1, 3, {one: 'one', two: 'two'}])
 logger.tree("a string");
 logger.tree(2);
 logger.tree(true);
+logger.tree({
+    one: 'one',
+    two: 't$()wo',
+    three: [0, 1, false],
+    four: {
+        one: 'one',
+        two: 'two',
+        three: [0, 1, 3, {one: 'one', two: 'two'}]
+    }
+}, 2);
