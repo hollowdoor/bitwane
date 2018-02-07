@@ -18,15 +18,15 @@ function arr(input){
     ? 'green:' : '';
 }
 function edge(input){
-    return `$(${arr(input)}bright)${input}$()`;
+    return `$(bright)${input}$()`;
 }
 
 function last(input){
-    return edge(Array.isArray(input) ? ' [': ' {');
+    return edge(Array.isArray(input) ? '[': '{');
 }
 
 function num(input){
-    return `$(magenta:bright)${input}$()`;
+    return `$(green:bright)${input}$()`;
 }
 
 function str(input){
@@ -40,18 +40,22 @@ function other(input){
     ? num(input)
     : type === 'boolean'
     ? `$(red:bright)${input}$()`
-    : input;
+    : esc(input);
 }
 
-function dt(input){
-    return `$(green)${input}$()`;
+function circ(input){
+    return `$(red:bright)[Circular${input.constructor.name ? ' ' + input.constructor.name : '' }]$()`
 }
+
+const dt = typeof new Date().toJSON === 'function'
+? (input)=>`$(magenta)${input.toJSON()}$()`
+: (input)=>`$(magenta)${input.toISOString()}$()`;
 
 function isDate(input){
-    return Object.prototype.toString.call(date) === '[object Date]';
+    return Object.prototype.toString.call(input) === '[object Date]';
 }
 
-export default function printObject(input, depth = 0, ending = false, start = false){
+export default function printObject(input, depth = 0, ending = false, start = false, hash = new WeakMap()){
     const type = typeof input;
 
     if(type !== 'object'){
@@ -67,17 +71,28 @@ export default function printObject(input, depth = 0, ending = false, start = fa
     const end = keys.length - 1;
     let output = '';
 
+    hash.set(input, true);
+
     if(isArray){
         if(start) log(edge('['), depth);
         for(let i=0; i<keys.length; i++){
             let out = '';
             let val = input[keys[i]];
             let valType = typeof val;
+
             if(valType === 'string'){
                 log(str(val), depth + 2, i !== end);
             }else if(valType === 'object'){
-                log(last(val), depth + 1);
-                printObject(val, depth + 2, i !== end)
+
+                if(isDate(val)){
+                    log(dt(val), depth + 2, i !== end);
+                }else
+                if(hash.has(val)){
+                    log(circ(val), depth + 2, i !== end);
+                }else{
+                    log(last(val), depth + 2);
+                    printObject(val, depth + 2, i !== end, false, hash);
+                }
             }else{
                 log(other(val), depth + 2, i !== end);
             }
@@ -92,64 +107,24 @@ export default function printObject(input, depth = 0, ending = false, start = fa
         let key = keys[i];
         let val = input[key];
         let valType = typeof val;
+
         if(valType === 'string'){
             log(`${key}: ${str(val)}`, depth + 2, i !== end);
         }else if(valType === 'object'){
-            log(`${key}:${last(val)}`, depth + 2);
-            printObject(val, depth + 2, i !== end);
+
+            if(isDate(val)){
+                log(`${key}: ${dt(val)}`, depth + 2, i !== end);
+            }else if(hash.has(val)){
+                log(`${key}: ${circ(val)}`, depth + 2, i !== end);
+            }else{
+                log(`${key}: ${last(val)}`, depth + 2);
+                printObject(val, depth + 2, i !== end, false, hash);
+            }
         }else{
+
             log(`${key}: ${other(val)}`, depth + 2, i !== end);
         }
     }
 
     log(edge('}'), depth, ending);
-}
-
-//export default
-function _printObject(input, depth = 0){
-    const type = typeof input;
-
-    if(type === 'string'){
-        return indent(`"${input}"`, depth);
-    }else if(['number', 'boolean', 'undefined'].indexOf(type) !== -1 || input === null){
-        return indent(input + '', depth);
-    }
-
-    const isArray = Array.isArray(input);
-    const keys = Object.keys(input);
-    const end = keys.length - 1;
-    let output = '';
-
-    if(isArray){
-        output += '[\n';
-        for(let i=0; i<keys.length; i++){
-            let val = input[keys[i]];
-            let valType = typeof val;
-            output += (valType === 'string'
-                ? indent(`"${val}"`, depth + 1)
-                : valType === 'object'
-                ? printObject(val, depth + 1)
-                : indent(val + '', depth + 1)
-            ) + (i !== end ? ',' : '') + '\n';
-        }
-        output += ']\n';
-        return output;
-    }
-
-    for(let i=0; i<keys.length; i++){
-        let key = keys[i];
-        let val = input[key];
-        let valType = typeof val;
-        output += (valType === 'string'
-        ? `${key}: $(red)"${val}"$()`
-        : valType === 'object'
-        ? indent(
-            `${key}: ${printObject(val, depth + 1)}`,
-            depth
-        )
-        : val)
-        + (i !== end ? ',\n' : '\n');
-    }
-
-    return output;
 }

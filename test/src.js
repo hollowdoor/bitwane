@@ -97,3 +97,19 @@ logger.tree({
         three: [0, 1, 3, {one: 'one', two: 'two'}]
     }
 }, 2);
+
+const base = {
+    one: 'one',
+    two: 't$()wo',
+    three: [0, 1, false],
+    four: {
+        one: 'one',
+        two: 'two',
+        three: [0, 1, 3, {one: 'one', two: 'two'}]
+    },
+    date: new Date(Date.now())
+};
+
+base.four.circ = base;
+
+logger.tree(base);

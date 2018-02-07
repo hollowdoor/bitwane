@@ -415,22 +415,16 @@ function log(input, dent, end){
     console.log.apply(console, inputs);
 }
 
-function arr(input){
-    return input === ']'
-    || input === '['
-    || input === ' ['
-    ? 'green:' : '';
-}
 function edge(input){
-    return ("$(" + (arr(input)) + "bright)" + input + "$()");
+    return ("$(bright)" + input + "$()");
 }
 
 function last(input){
-    return edge(Array.isArray(input) ? ' [': ' {');
+    return edge(Array.isArray(input) ? '[': '{');
 }
 
 function num(input){
-    return ("$(magenta:bright)" + input + "$()");
+    return ("$(green:bright)" + input + "$()");
 }
 
 function str(input){
@@ -444,13 +438,26 @@ function other(input){
     ? num(input)
     : type === 'boolean'
     ? ("$(red:bright)" + input + "$()")
-    : input;
+    : esc(input);
 }
 
-function printObject(input, depth, ending, start){
+function circ(input){
+    return ("$(red:bright)[Circular" + (input.constructor.name ? ' ' + input.constructor.name : '') + "]$()")
+}
+
+var dt = typeof new Date().toJSON === 'function'
+? function (input){ return ("$(magenta)" + (input.toJSON()) + "$()"); }
+: function (input){ return ("$(magenta)" + (input.toISOString()) + "$()"); };
+
+function isDate(input){
+    return Object.prototype.toString.call(input) === '[object Date]';
+}
+
+function printObject(input, depth, ending, start, hash){
     if ( depth === void 0 ) { depth = 0; }
     if ( ending === void 0 ) { ending = false; }
     if ( start === void 0 ) { start = false; }
+    if ( hash === void 0 ) { hash = new WeakMap(); }
 
     var type = typeof input;
 
@@ -467,17 +474,28 @@ function printObject(input, depth, ending, start){
     var end = keys.length - 1;
     var output = '';
 
+    hash.set(input, true);
+
     if(isArray){
         if(start) { log(edge('['), depth); }
         for(var i=0; i<keys.length; i++){
             var out = '';
             var val = input[keys[i]];
             var valType = typeof val;
+
             if(valType === 'string'){
                 log(str(val), depth + 2, i !== end);
             }else if(valType === 'object'){
-                log(last(val), depth + 1);
-                printObject(val, depth + 2, i !== end);
+
+                if(isDate(val)){
+                    log(dt(val), depth + 2, i !== end);
+                }else
+                if(hash.has(val)){
+                    log(circ(val), depth + 2, i !== end);
+                }else{
+                    log(last(val), depth + 2);
+                    printObject(val, depth + 2, i !== end, false, hash);
+                }
             }else{
                 log(other(val), depth + 2, i !== end);
             }
@@ -492,12 +510,24 @@ function printObject(input, depth, ending, start){
         var key = keys[i$1];
         var val$1 = input[key];
         var valType$1 = typeof val$1;
+        //console.log('val ',val)
+        //console.log('valType ',valType)
+        //console.log('isDate(val) ',isDate(val))
+
         if(valType$1 === 'string'){
             log((key + ": " + (str(val$1))), depth + 2, i$1 !== end);
         }else if(valType$1 === 'object'){
-            log((key + ":" + (last(val$1))), depth + 2);
-            printObject(val$1, depth + 2, i$1 !== end);
+
+            if(isDate(val$1)){
+                log((key + ": " + (dt(val$1))), depth + 2, i$1 !== end);
+            }else if(hash.has(val$1)){
+                log((key + ": " + (circ(val$1))), depth + 2, i$1 !== end);
+            }else{
+                log((key + ": " + (last(val$1))), depth + 2);
+                printObject(val$1, depth + 2, i$1 !== end, false, hash);
+            }
         }else{
+
             log((key + ": " + (other(val$1))), depth + 2, i$1 !== end);
         }
     }
@@ -726,6 +756,22 @@ logger.tree({
         three: [0, 1, 3, {one: 'one', two: 'two'}]
     }
 }, 2);
+
+var base = {
+    one: 'one',
+    two: 't$()wo',
+    three: [0, 1, false],
+    four: {
+        one: 'one',
+        two: 'two',
+        three: [0, 1, 3, {one: 'one', two: 'two'}]
+    },
+    date: new Date(Date.now())
+};
+
+base.four.circ = base;
+
+logger.tree(base);
 
 }());
 //# sourceMappingURL=code.js.map

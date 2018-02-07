@@ -97,7 +97,17 @@ logger.list([
 });
 ```
 
-There are also two experimental methods.
+## logger.tree()
+
+Print an object using `logger.tree(object)`.
+
+You can also indent the object using `logger.tree(object, number)`.
+
+The `object` you pass can be any javascript value.
+
+Objects, and arrays passed to `logger.tree()` are formatted for easy reading.
+
+## There are also two experimental methods.
 
 * logger.ok()
 * logger.notok()
