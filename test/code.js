@@ -709,5 +709,10 @@ logger.tree({
     }
 });
 
+logger.tree([0, 1, 3, {one: 'one', two: 'two'}]);
+logger.tree("a string");
+logger.tree(2);
+logger.tree(true);
+
 }());
 //# sourceMappingURL=code.js.map

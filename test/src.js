@@ -82,3 +82,8 @@ logger.tree({
         three: [0, 1, 3, {one: 'one', two: 'two'}]
     }
 });
+
+logger.tree([0, 1, 3, {one: 'one', two: 'two'}])
+logger.tree("a string");
+logger.tree(2);
+logger.tree(true);
