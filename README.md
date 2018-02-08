@@ -24,6 +24,12 @@ You should see something like this:
 
 ![Terminal output image!](/images/preview1.png "Terminal output image!")
 
+```javascript
+//indent the output
+const indent = 4;
+logger.log('This should be indented four spaces', null, indent);
+```
+
 The syntax for string formatting is `%(property)`.
 
 The syntax for styles is `$(foreground:background other text styles separated by spaces)`.
