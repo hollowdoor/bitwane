@@ -132,6 +132,20 @@ const logger = new Logger({
 });
 ```
 
+### The every() method
+
+The `every` constructor method can be used to intercept input values, and alter them. It is optional.
+
+Use the `output()` method to finally print the input value. If the `output()` method isn't called nothing will be printed.
+
+```javascript
+const logger = new Logger({
+    every(type, input, format, indent){
+        this.output(type, input, format, indent);
+    }
+});
+```
+
 About
 ---
 
