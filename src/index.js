@@ -25,7 +25,10 @@ const prefixer = (doPrefix)=>{
 class Logger {
     constructor({
         prefix = false,
-        each = null
+        each = null,
+        every = function(type, input, format){
+            this.output(type, input, format);
+        }
     } = {}){
         this.prefix = prefix;
         this.clear = clear;
@@ -34,35 +37,51 @@ class Logger {
         if(each && typeof each !== 'function'){
             throw new TypeError(`${each} is not a function`);
         }
+        this._every = every;
+        if(every && typeof every !== 'function'){
+            throw new TypeError(`${every} is not a function`);
+        }
     }
-    process(input, format = {}, type = null){
+    output(type, input, format){
+        let inputs = processInput(input, format);
+        if(!!console[type]){
+            return console[type](...inputs);
+        }else if(!!this['__'+type]){
+            return this['__'+type](...inputs);
+        }
+        throw new Error(`${type} is not a method on ${this.constructor}`);
+    }
+    process(type, input, format){
         if(this._each){
             this._each(noStyles(input, format));
         }
         input = this._prefix(input, type);
-        let inputs = processInput(input, format);
-        //inputs[0] = this._prefix(inputs[0], type);
-        return inputs;
+        this._every(type, input, format);
+        return this;
     }
     log(input, format){
-        let inputs = this.process(input, format);
-        return console.log(...inputs);
+        return this.process('log', input, format);
     }
     error(input, format){
-        let inputs = this.process(input, format, 'error');
-        return console.error(...inputs);
+        return this.process('error', input, format);
     }
     info(input, format){
-        let inputs = this.process(input, format, 'info');
-        return console.info(...inputs);
+        return this.process('info', input, format);
     }
     warn(input, format){
-        let inputs = this.process(input, format, 'warning');
-        return console.warn(...inputs);
+        return this.process('warn', input, format);
     }
     ok(input, format){
-        let inputs = this.process(`${logSymbols.success} ${input}`, format);
-        return console.log(...inputs);
+        return this.process('ok', input, format);
+    }
+    notok(input, format){
+        return this.process('notok', input, format);
+    }
+    __ok(...inputs){
+        console.log(...inputs);
+    }
+    __notok(...inputs){
+        console.error(...inputs);
     }
     static toList(input, {
         extra = 1,

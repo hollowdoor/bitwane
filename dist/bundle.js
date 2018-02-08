@@ -321,9 +321,6 @@ function printObject(input, depth, ending, start, hash){
         var key = keys[i$1];
         var val$1 = input[key];
         var valType$1 = typeof val$1;
-        //console.log('val ',val)
-        //console.log('valType ',valType)
-        //console.log('isDate(val) ',isDate(val))
 
         if(valType$1 === 'string'){
             log((key + ": " + (str(val$1))), depth + 2, i$1 !== end);
@@ -367,6 +364,9 @@ var Logger = function Logger(ref){
     if ( ref === void 0 ) ref = {};
     var prefix = ref.prefix; if ( prefix === void 0 ) prefix = false;
     var each = ref.each; if ( each === void 0 ) each = null;
+    var every = ref.every; if ( every === void 0 ) every = function(type, input, format){
+        this.output(type, input, format);
+    };
 
     this.prefix = prefix;
     this.clear = clear;
@@ -375,38 +375,58 @@ var Logger = function Logger(ref){
     if(each && typeof each !== 'function'){
         throw new TypeError((each + " is not a function"));
     }
+    this._every = every;
+    if(every && typeof every !== 'function'){
+        throw new TypeError((every + " is not a function"));
+    }
 };
-Logger.prototype.process = function process (input, format, type){
-        if ( format === void 0 ) format = {};
-        if ( type === void 0 ) type = null;
-
+Logger.prototype.output = function output (type, input, format){
+    var inputs = processInput(input, format);
+    if(!!console[type]){
+        return console[type].apply(console, inputs);
+    }else if(!!this['__'+type]){
+        return (ref = this)['__'+type].apply(ref, inputs);
+    }
+    throw new Error((type + " is not a method on " + (this.constructor)));
+        var ref;
+};
+Logger.prototype.process = function process (type, input, format){
     if(this._each){
         this._each(noStyles(input, format));
     }
     input = this._prefix(input, type);
-    var inputs = processInput(input, format);
-    //inputs[0] = this._prefix(inputs[0], type);
-    return inputs;
+    this._every(type, input, format);
+    return this;
 };
 Logger.prototype.log = function log (input, format){
-    var inputs = this.process(input, format);
-    return console.log.apply(console, inputs);
+    return this.process('log', input, format);
 };
 Logger.prototype.error = function error (input, format){
-    var inputs = this.process(input, format, 'error');
-    return console.error.apply(console, inputs);
+    return this.process('error', input, format);
 };
 Logger.prototype.info = function info (input, format){
-    var inputs = this.process(input, format, 'info');
-    return console.info.apply(console, inputs);
+    return this.process('info', input, format);
 };
 Logger.prototype.warn = function warn (input, format){
-    var inputs = this.process(input, format, 'warning');
-    return console.warn.apply(console, inputs);
+    return this.process('warn', input, format);
 };
 Logger.prototype.ok = function ok (input, format){
-    var inputs = this.process(((logSymbols.success) + " " + input), format);
-    return console.log.apply(console, inputs);
+    return this.process('ok', input, format);
+};
+Logger.prototype.notok = function notok (input, format){
+    return this.process('notok', input, format);
+};
+Logger.prototype.__ok = function __ok (){
+        var inputs = [], len = arguments.length;
+        while ( len-- ) inputs[ len ] = arguments[ len ];
+
+    console.log.apply(console, inputs);
+};
+Logger.prototype.__notok = function __notok (){
+        var inputs = [], len = arguments.length;
+        while ( len-- ) inputs[ len ] = arguments[ len ];
+
+    console.error.apply(console, inputs);
 };
 Logger.toList = function toList (input, ref){
         if ( ref === void 0 ) ref = {};

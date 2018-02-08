@@ -2,6 +2,9 @@ import { Logger, allowedColors } from '../';
 const logger = new Logger({
     each(value){
         console.log('each ', value);
+    },
+    every(type, input, format){
+        this.output(type, input, format);
     }
 });
 
