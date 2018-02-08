@@ -1,3 +1,4 @@
+import indentString from 'indent-string';
 import { IN_BROWSER, DEBUG } from './lib/constants.js';
 import { logSymbols } from './lib/log_symbols.js';
 import { processInput, noStyles } from './lib/process_input.js';
@@ -26,8 +27,8 @@ class Logger {
     constructor({
         prefix = false,
         each = null,
-        every = function(type, input, format){
-            this.output(type, input, format);
+        every = function(type, input, format, indent){
+            this.output(type, input, format, indent);
         }
     } = {}){
         this.prefix = prefix;
@@ -42,8 +43,22 @@ class Logger {
             throw new TypeError(`${every} is not a function`);
         }
     }
-    output(type, input, format){
+    process(type, input, format, indent){
         let inputs = processInput(input, format);
+
+        inputs[0] = !indent || isNaN(indent) ? inputs[0] : indentString(inputs[0], indent);
+        return inputs;
+    }
+    input(type, input, format, indent){
+        if(this._each){
+            this._each(noStyles(input, format));
+        }
+        input = this._prefix(input, type);
+        this._every(type, input, format, indent);
+        return this;
+    }
+    output(type, input, format, indent){
+        let inputs = this.process(type, input, format, indent);
         if(!!console[type]){
             return console[type](...inputs);
         }else if(!!this['__'+type]){
@@ -51,31 +66,23 @@ class Logger {
         }
         throw new Error(`${type} is not a method on ${this.constructor}`);
     }
-    process(type, input, format){
-        if(this._each){
-            this._each(noStyles(input, format));
-        }
-        input = this._prefix(input, type);
-        this._every(type, input, format);
-        return this;
+    log(input, format, indent){
+        return this.input('log', input, format, indent);
     }
-    log(input, format){
-        return this.process('log', input, format);
+    error(input, format, indent){
+        return this.input('error', input, format, indent);
     }
-    error(input, format){
-        return this.process('error', input, format);
+    info(input, format, indent){
+        return this.input('info', input, format, indent);
     }
-    info(input, format){
-        return this.process('info', input, format);
+    warn(input, format, indent){
+        return this.input('warn', input, format, indent);
     }
-    warn(input, format){
-        return this.process('warn', input, format);
+    ok(input, format, indent){
+        return this.input('ok', input, format, indent);
     }
-    ok(input, format){
-        return this.process('ok', input, format);
-    }
-    notok(input, format){
-        return this.process('notok', input, format);
+    notok(input, format, indent){
+        return this.input('notok', input, format, indent);
     }
     __ok(...inputs){
         console.log(...inputs);

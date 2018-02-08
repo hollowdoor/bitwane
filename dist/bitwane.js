@@ -1,6 +1,40 @@
 (function (exports) {
 'use strict';
 
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var indentString = createCommonjsModule(function (module) {
+'use strict';
+module.exports = function (str, count, opts) {
+	// Support older versions: use the third parameter as options.indent
+	// TODO: Remove the workaround in the next major version
+	var options = typeof opts === 'object' ? Object.assign({indent: ' '}, opts) : {indent: opts || ' '};
+	count = count === undefined ? 1 : count;
+
+	if (typeof str !== 'string') {
+		throw new TypeError(("Expected `input` to be a `string`, got `" + (typeof str) + "`"));
+	}
+
+	if (typeof count !== 'number') {
+		throw new TypeError(("Expected `count` to be a `number`, got `" + (typeof count) + "`"));
+	}
+
+	if (typeof options.indent !== 'string') {
+		throw new TypeError(("Expected `options.indent` to be a `string`, got `" + (typeof options.indent) + "`"));
+	}
+
+	if (count === 0) {
+		return str;
+	}
+
+	var regex = options.includeEmptyLines ? /^/mg : /^(?!\s*$)/mg;
+	return str.replace(regex, options.indent.repeat(count));
+}
+;
+});
+
 var browserSupportsLogStyles_1$1 = browserSupportsLogStyles;
 
 function browserSupportsLogStyles () {
@@ -369,40 +403,6 @@ function esc(input){
     });
 }
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var indentString = createCommonjsModule(function (module) {
-'use strict';
-module.exports = function (str, count, opts) {
-	// Support older versions: use the third parameter as options.indent
-	// TODO: Remove the workaround in the next major version
-	var options = typeof opts === 'object' ? Object.assign({indent: ' '}, opts) : {indent: opts || ' '};
-	count = count === undefined ? 1 : count;
-
-	if (typeof str !== 'string') {
-		throw new TypeError(("Expected `input` to be a `string`, got `" + (typeof str) + "`"));
-	}
-
-	if (typeof count !== 'number') {
-		throw new TypeError(("Expected `count` to be a `number`, got `" + (typeof count) + "`"));
-	}
-
-	if (typeof options.indent !== 'string') {
-		throw new TypeError(("Expected `options.indent` to be a `string`, got `" + (typeof options.indent) + "`"));
-	}
-
-	if (count === 0) {
-		return str;
-	}
-
-	var regex = options.includeEmptyLines ? /^/mg : /^(?!\s*$)/mg;
-	return str.replace(regex, options.indent.repeat(count));
-}
-;
-});
-
 function log(input, dent, end){
     if ( dent === void 0 ) dent = 0;
     if ( end === void 0 ) end = false;
@@ -553,8 +553,8 @@ var Logger = function Logger(ref){
     if ( ref === void 0 ) ref = {};
     var prefix = ref.prefix; if ( prefix === void 0 ) prefix = false;
     var each = ref.each; if ( each === void 0 ) each = null;
-    var every = ref.every; if ( every === void 0 ) every = function(type, input, format){
-        this.output(type, input, format);
+    var every = ref.every; if ( every === void 0 ) every = function(type, input, format, indent$$1){
+        this.output(type, input, format, indent$$1);
     };
 
     this.prefix = prefix;
@@ -569,8 +569,22 @@ var Logger = function Logger(ref){
         throw new TypeError((every + " is not a function"));
     }
 };
-Logger.prototype.output = function output (type, input, format){
+Logger.prototype.process = function process (type, input, format, indent$$1){
     var inputs = processInput(input, format);
+
+    inputs[0] = !indent$$1 || isNaN(indent$$1) ? inputs[0] : indentString(inputs[0], indent$$1);
+    return inputs;
+};
+Logger.prototype.input = function input (type, input$1, format, indent$$1){
+    if(this._each){
+        this._each(noStyles(input$1, format));
+    }
+    input$1 = this._prefix(input$1, type);
+    this._every(type, input$1, format, indent$$1);
+    return this;
+};
+Logger.prototype.output = function output (type, input, format, indent$$1){
+    var inputs = this.process(type, input, format, indent$$1);
     if(!!console[type]){
         return console[type].apply(console, inputs);
     }else if(!!this['__'+type]){
@@ -579,31 +593,23 @@ Logger.prototype.output = function output (type, input, format){
     throw new Error((type + " is not a method on " + (this.constructor)));
         var ref;
 };
-Logger.prototype.process = function process (type, input, format){
-    if(this._each){
-        this._each(noStyles(input, format));
-    }
-    input = this._prefix(input, type);
-    this._every(type, input, format);
-    return this;
+Logger.prototype.log = function log (input, format, indent$$1){
+    return this.input('log', input, format, indent$$1);
 };
-Logger.prototype.log = function log (input, format){
-    return this.process('log', input, format);
+Logger.prototype.error = function error (input, format, indent$$1){
+    return this.input('error', input, format, indent$$1);
 };
-Logger.prototype.error = function error (input, format){
-    return this.process('error', input, format);
+Logger.prototype.info = function info (input, format, indent$$1){
+    return this.input('info', input, format, indent$$1);
 };
-Logger.prototype.info = function info (input, format){
-    return this.process('info', input, format);
+Logger.prototype.warn = function warn (input, format, indent$$1){
+    return this.input('warn', input, format, indent$$1);
 };
-Logger.prototype.warn = function warn (input, format){
-    return this.process('warn', input, format);
+Logger.prototype.ok = function ok (input, format, indent$$1){
+    return this.input('ok', input, format, indent$$1);
 };
-Logger.prototype.ok = function ok (input, format){
-    return this.process('ok', input, format);
-};
-Logger.prototype.notok = function notok (input, format){
-    return this.process('notok', input, format);
+Logger.prototype.notok = function notok (input, format, indent$$1){
+    return this.input('notok', input, format, indent$$1);
 };
 Logger.prototype.__ok = function __ok (){
         var inputs = [], len = arguments.length;
@@ -662,10 +668,10 @@ Logger.prototype.list = function list (input, options){
         return line;
     });
 };
-Logger.prototype.tree = function tree (input, indent){
-        if ( indent === void 0 ) indent = 0;
+Logger.prototype.tree = function tree (input, indent$$1){
+        if ( indent$$1 === void 0 ) indent$$1 = 0;
 
-    return printObject(input, indent, false, true);
+    return printObject(input, indent$$1, false, true);
 };
 
 
