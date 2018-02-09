@@ -3,6 +3,7 @@ import { IN_BROWSER, DEBUG } from './lib/constants.js';
 import { logSymbols } from './lib/log_symbols.js';
 import { processInput, noStyles } from './lib/process_input.js';
 import printObject from './lib/print_object.js';
+import { addTo } from './lib/conditional_methods.js';
 export * from './lib/allowed_styles.js';
 export * from './lib/style_codes.js';
 
@@ -10,11 +11,6 @@ export * from './lib/style_codes.js';
 
 //const example = `$(red:blue underscore)string$()`;
 
-const clear = IN_BROWSER
-//https://developer.mozilla.org/en-US/docs/Web/API/Console/clear
-? ()=>console.clear()
-//https://gist.github.com/KenanSulayman/4990953
-: ()=>process.stdout.write('\x1Bc');
 
 const prefixer = (doPrefix)=>{
     return doPrefix && !IN_BROWSER
@@ -32,7 +28,6 @@ class Logger {
         }
     } = {}){
         this.prefix = prefix;
-        this.clear = clear;
         this._prefix = prefixer(prefix);
         this._each = each;
         if(each && typeof each !== 'function'){
@@ -136,15 +131,8 @@ class Logger {
     }
 }
 
+addTo(Logger.prototype);
 
-Logger.prototype.notok = IN_BROWSER
-? function(input, format){
-    return this.error(input, format);
-}
-: function(input, format){
-    let inputs = processInput(`${logSymbols.error} ${input}`, format);
-    return console.error(...inputs);
-};
 
 const Debugger = (()=>{
     if(DEBUG){

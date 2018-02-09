@@ -337,15 +337,18 @@ function printObject(input, depth, ending, start, hash){
     log(edge('}'), depth, ending);
 }
 
+function addTo(proto){
+    proto.clear = IN_BROWSER
+    //https://developer.mozilla.org/en-US/docs/Web/API/Console/clear
+    ? function (){ return console.clear(); }
+    //https://gist.github.com/KenanSulayman/4990953
+    : function (){ return process.stdout.write('\x1Bc'); };
+}
+
 //https://coderwall.com/p/yphywg/printing-colorful-text-in-terminal-when-run-node-js-script
 
 //const example = `$(red:blue underscore)string$()`;
 
-var clear = IN_BROWSER
-//https://developer.mozilla.org/en-US/docs/Web/API/Console/clear
-? function (){ return console.clear(); }
-//https://gist.github.com/KenanSulayman/4990953
-: function (){ return process.stdout.write('\x1Bc'); };
 
 var prefixer = function (doPrefix){
     return doPrefix && !IN_BROWSER
@@ -363,7 +366,6 @@ var Logger = function Logger(ref){
     };
 
     this.prefix = prefix;
-    this.clear = clear;
     this._prefix = prefixer(prefix);
     this._each = each;
     if(each && typeof each !== 'function'){
@@ -479,15 +481,8 @@ Logger.prototype.tree = function tree (input, indent){
     return printObject(input, indent, false, true);
 };
 
+addTo(Logger.prototype);
 
-Logger.prototype.notok = IN_BROWSER
-? function(input, format){
-    return this.error(input, format);
-}
-: function(input, format){
-    var inputs = processInput(((logSymbols.error) + " " + input), format);
-    return console.error.apply(console, inputs);
-};
 
 var Debugger = (function (){
     if(DEBUG){
