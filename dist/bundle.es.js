@@ -361,6 +361,7 @@ var Logger = function Logger(ref){
     if ( ref === void 0 ) ref = {};
     var prefix = ref.prefix; if ( prefix === void 0 ) prefix = false;
     var each = ref.each; if ( each === void 0 ) each = null;
+    var indentLength = ref.indentLength; if ( indentLength === void 0 ) indentLength = 2;
     var every = ref.every; if ( every === void 0 ) every = function(type, input, format, indent){
         this.output(type, input, format, indent);
     };
@@ -368,6 +369,7 @@ var Logger = function Logger(ref){
     this.prefix = prefix;
     this._prefix = prefixer(prefix);
     this._each = each;
+    this.indentLength = indentLength;
     if(each && typeof each !== 'function'){
         throw new TypeError((each + " is not a function"));
     }
@@ -379,7 +381,7 @@ var Logger = function Logger(ref){
 Logger.prototype.process = function process (type, input, format, indent){
     var inputs = processInput(input, format);
 
-    inputs[0] = !indent || isNaN(indent) ? inputs[0] : indentString(inputs[0], indent);
+    inputs[0] = !indent || isNaN(indent) ? inputs[0] : indentString(inputs[0], indent * this.indentLength);
     return inputs;
 };
 Logger.prototype.input = function input (type, input$1, format, indent){

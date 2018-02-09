@@ -27,7 +27,7 @@ You should see something like this:
 ```javascript
 //indent the output
 const indent = 4;
-logger.log('This should be indented four spaces', null, indent);
+logger.log('This should be indented', null, indent);
 ```
 
 The syntax for string formatting is `%(property)`.
@@ -123,6 +123,9 @@ The constructor
 
 ```javascript
 const logger = new Logger({
+    //How much should each indent be.
+    //The default is 2
+    indentLength: 2,
     //Add a symbol prefix while in a terminal
     prefix: true, //default false,
     each(value){ //default null

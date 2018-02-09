@@ -23,6 +23,7 @@ class Logger {
     constructor({
         prefix = false,
         each = null,
+        indentLength = 2,
         every = function(type, input, format, indent){
             this.output(type, input, format, indent);
         }
@@ -30,6 +31,7 @@ class Logger {
         this.prefix = prefix;
         this._prefix = prefixer(prefix);
         this._each = each;
+        this.indentLength = indentLength;
         if(each && typeof each !== 'function'){
             throw new TypeError(`${each} is not a function`);
         }
@@ -41,7 +43,7 @@ class Logger {
     process(type, input, format, indent){
         let inputs = processInput(input, format);
 
-        inputs[0] = !indent || isNaN(indent) ? inputs[0] : indentString(inputs[0], indent);
+        inputs[0] = !indent || isNaN(indent) ? inputs[0] : indentString(inputs[0], indent * this.indentLength);
         return inputs;
     }
     input(type, input, format, indent){

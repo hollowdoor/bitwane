@@ -113,4 +113,4 @@ const base = {
 base.four.circ = base;
 
 logger.tree(base);
-logger.log('This should be indented', null, 4);
+logger.log('This should be indented', null, 2);
