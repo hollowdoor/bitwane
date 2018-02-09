@@ -81,7 +81,7 @@ function debugging(){
     return !!process.env['DEBUG'] && process.env['DEBUG'] === 1 || process.env['DEBUG'] === 'true';
 }
 
-var TERM_SUPPORTS_COLOR$$1 = (function (){
+var TERM_SUPPORTS_COLOR = (function (){
     var supports = supportsColor();
     return !supports.browser && supports.stdout.hasBasic;
 })();
@@ -247,7 +247,7 @@ var fgcodes = rawObject({reset: reset});
 var bgcodes = rawObject({reset: reset});
 var styleCodes = rawObject({reset: reset});
 
-if(!IN_BROWSER && TERM_SUPPORTS_COLOR$$1){
+if(!IN_BROWSER && TERM_SUPPORTS_COLOR){
     //Set terminal colors
     Object.keys(allowedColors).forEach(function (color){
         fgcodes[color] = "\u001b[3" + (allowedColors[color]) + "m";
@@ -257,7 +257,7 @@ if(!IN_BROWSER && TERM_SUPPORTS_COLOR$$1){
     Object.keys(allowedStyles).forEach(function (style){
         styleCodes[style] = "\u001b[" + (allowedStyles[style]) + "m";
     });
-}else if(!TERM_SUPPORTS_COLOR$$1){
+}else if(!TERM_SUPPORTS_COLOR){
     Object.keys(allowedColors).forEach(function (color){
         fgcodes[color] = "";
         bgcodes[color] = "";
