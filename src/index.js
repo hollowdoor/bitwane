@@ -119,12 +119,20 @@ class Logger {
             throw new TypeError(`${input} is not an object, or array.`)
         }
         const { every = ((pre, val)=>{
-            return pre + val;
-        }) } = options;
+                return pre + val;
+            }),
+            indent = 0,
+            type = 'log'
+        } = options;
+
+        if(typeof (this[type]) !== 'function'){
+            throw new Error(`${type} is not a method on this object.`);
+        }
 
         return Logger.toList(input, options)
         .map(line=>{
-            console.log(every.call(this, line.pre, line.val));
+            let out = every.call(this, line.pre, line.val);
+            this[type](out, null, indent);
             return line;
         });
     }

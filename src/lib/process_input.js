@@ -97,7 +97,7 @@ const processInput = IN_BROWSER
 };
 
 function noStyles(input, format = {}){
-    return input.replace(pattern, (m, type, res, str)=>{
+    return (input + '').replace(pattern, (m, type, res, str)=>{
 
         if(type === '%('){
             return format[res] + str;

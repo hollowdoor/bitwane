@@ -1,7 +1,7 @@
 import { Logger, allowedColors } from '../';
 const logger = new Logger({
     each(value){
-        console.log('each ', value);
+        //console.log('each ', value);
     }
 });
 

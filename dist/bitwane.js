@@ -383,7 +383,7 @@ var processInput = IN_BROWSER
 function noStyles(input, format){
     if ( format === void 0 ) format = {};
 
-    return input.replace(pattern, function (m, type, res, str){
+    return (input + '').replace(pattern, function (m, type, res, str){
 
         if(type === '%('){
             return format[res] + str;
@@ -663,12 +663,19 @@ Logger.prototype.list = function list (input, options){
         throw new TypeError((input + " is not an object, or array."))
     }
     var every = options.every; if ( every === void 0 ) every = (function (pre, val){
-        return pre + val;
-    });
+            return pre + val;
+        });
+        var indent$$1 = options.indent; if ( indent$$1 === void 0 ) indent$$1 = 0;
+        var type = options.type; if ( type === void 0 ) type = 'log';
+
+    if(typeof (this[type]) !== 'function'){
+        throw new Error((type + " is not a method on this object."));
+    }
 
     return Logger.toList(input, options)
     .map(function (line){
-        console.log(every.call(this$1, line.pre, line.val));
+        var out = every.call(this$1, line.pre, line.val);
+        this$1[type](out, null, indent$$1);
         return line;
     });
 };
