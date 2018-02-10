@@ -764,6 +764,12 @@ logger.list([
     'eleven'
 ]);
 
+logger.list([
+    'one',
+    'two',
+    'three'
+], {indent: 2});
+
 logger.tree({
     one: 'one',
     two: 't$()wo',

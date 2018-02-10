@@ -87,14 +87,18 @@ logger.list([
     'two',
     'three'
 ], {
+    //The logging type/A method on this object
+    type:'log',
+    //Indent the list
+    indent: 0,
     //Repeat sep (default = 1)
-    extra = 1,
+    extra: 1,
     //sep separates the property/index from the value
     //(default = ' ')
-    sep = ' ',
+    sep: ' ',
     //A dot after the index of a list array
     //(default = '.')
-    dot = '.',
+    dot: '.',
     //Alter each index, and value
     //right before logging.
     every(index, val){
